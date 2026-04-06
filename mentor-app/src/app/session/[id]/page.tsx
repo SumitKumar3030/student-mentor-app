@@ -115,7 +115,7 @@ export default function UnifiedSession() {
       }
 
       // 2. Setup Socket
-      const socket = io("http://localhost:5000");
+      const socket = io("https://student-mentor-app-18ym.onrender.com");
       socketRef.current = socket;
 
       // 3. Setup WebRTC Peer Connection
