@@ -143,6 +143,13 @@ useEffect(() => {
 
     pc.current = peer;
     currentPeer = peer;
+//updated 7april
+    peer.ontrack = (event) => {
+  if (remoteVideoRef.current) {
+    remoteVideoRef.current.srcObject = event.streams[0];
+  }
+};
+
 
     // ✅ MEDIA
     try {
@@ -165,10 +172,20 @@ useEffect(() => {
 
 socket.emit("join-session", sessionKey);
 
+//updated to handle new peer connections 7 april
+//peer.onnegotiationneeded = async () => {
+  //if (role === "mentor") {
+   // const offer = await peer.createOffer();
+  //  await peer.setLocalDescription(offer);
+   // socket.emit("offer", { sessionKey, offer });
+ // }
+//};
+
+
 socket.on("user-joined", async () => {
   if (role === "mentor") {
     const offer = await peer.createOffer();
-    await peer.setLocalDescription(offer);
+   await peer.setLocalDescription(offer);
     socket.emit("offer", { sessionKey, offer });
   }
 });
