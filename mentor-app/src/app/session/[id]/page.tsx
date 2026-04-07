@@ -118,7 +118,9 @@ useEffect(() => {
     }
 
     // ✅ SOCKET
-    const socket = io("https://student-mentor-app-18ym.onrender.com");
+    const socket = io("https://student-mentor-app-18ym.onrender.com", {
+  transports: ["websocket"],
+});
     socketRef.current = socket;
     currentSocket = socket;
 
@@ -192,7 +194,21 @@ socket.on("ice-candidate", async (candidate) => {
   }
 });
 
-    // --- rest of your socket logic (NO CHANGE) ---
+// ✅ CODE SYNC
+socket.on("receive-code", (newCode: string) => {
+  setCode(newCode);
+});
+
+// ✅ LANGUAGE SYNC
+socket.on("receive-language", (newLang: string) => {
+  setLanguage(newLang);
+});
+
+// ✅ CHAT SYNC
+socket.on("receive-message", (msg: SessionMessage) => {
+  setMessages((prev) => [...prev, msg]);
+});
+
   };
 
   initSession();
