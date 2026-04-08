@@ -139,6 +139,7 @@ useEffect(() => {
           credential: "openrelayproject",
         },
       ],
+      iceTransportPolicy: "all",//updated 7april to allow both relay and direct connections
     });
 
     pc.current = peer;
@@ -149,6 +150,11 @@ useEffect(() => {
     remoteVideoRef.current.srcObject = event.streams[0];
   }
 };
+
+peer.oniceconnectionstatechange = () => {
+  console.log("ICE State:", peer.iceConnectionState);
+};
+
 
 
     // ✅ MEDIA
@@ -170,7 +176,11 @@ useEffect(() => {
       console.error("Camera error:", err);
     }
 
-socket.emit("join-session", sessionKey);
+// instead of direct emit
+socket.on("connect", () => {
+  socket.emit("join-session", sessionKey);
+});
+
 
 //updated to handle new peer connections 7 april
 //peer.onnegotiationneeded = async () => {
@@ -190,6 +200,17 @@ socket.on("user-joined", async () => {
   }
 });
 
+if (role === "mentor") {
+  setTimeout(async () => {
+    if (peer.signalingState === "stable") {
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      socket.emit("offer", { sessionKey, offer });
+    }
+  }, 1000);
+}
+
+
 socket.on("offer", async (offer) => {
   if (role === "student") {
     await peer.setRemoteDescription(new RTCSessionDescription(offer));
@@ -206,8 +227,10 @@ socket.on("answer", async (answer) => {
 });
 
 socket.on("ice-candidate", async (candidate) => {
-  if (peer.remoteDescription) {
+  try {
     await peer.addIceCandidate(new RTCIceCandidate(candidate));
+  } catch (e) {
+    console.error("ICE error:", e);
   }
 });
 
