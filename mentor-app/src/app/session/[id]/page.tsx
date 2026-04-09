@@ -151,6 +151,16 @@ useEffect(() => {
   }
 };
 
+peer.onicecandidate = (event) => {
+  if (event.candidate) {
+    socket.emit("ice-candidate", {
+      sessionKey,
+      candidate: event.candidate,
+    });
+  }
+};
+
+
 peer.oniceconnectionstatechange = () => {
   console.log("ICE State:", peer.iceConnectionState);
 };
@@ -176,10 +186,8 @@ peer.oniceconnectionstatechange = () => {
       console.error("Camera error:", err);
     }
 
-// instead of direct emit
-socket.on("connect", () => {
+// instead of direct emit 8th april
   socket.emit("join-session", sessionKey);
-});
 
 
 //updated to handle new peer connections 7 april
@@ -200,16 +208,19 @@ socket.on("user-joined", async () => {
   }
 });
 
-if (role === "mentor") {
-  setTimeout(async () => {
-    if (peer.signalingState === "stable") {
-      const offer = await peer.createOffer();
-      await peer.setLocalDescription(offer);
-      socket.emit("offer", { sessionKey, offer });
-    }
-  }, 1000);
-}
+//8th april update
 
+//if (role === "mentor") {
+//  setTimeout(async () => {
+//    if (peer.signalingState === "stable") {
+//      try {
+//        const offer = await peer.createOffer();
+//        await peer.setLocalDescription(offer);
+//        socket.emit("offer", { sessionKey, offer });
+//      } catch {}
+//    }
+//  }, 1200);
+//}
 
 socket.on("offer", async (offer) => {
   if (role === "student") {
